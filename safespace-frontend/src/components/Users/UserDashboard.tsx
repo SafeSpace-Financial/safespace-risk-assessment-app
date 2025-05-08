@@ -27,3 +27,30 @@ export default function UserDashboard() {
         </Container>
 ):null;
 }
+
+// Investment Simulator
+// fetch("http://localhost:5000/simulate_portfolio", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       amount: 10000,
+//       tickers: ["AAPL", "MSFT"],
+//       allocations: { "AAPL": 60, "MSFT": 40 },
+//       start_date: "2010-01-01",
+//       end_date: "2020-01-01"
+//     })
+//   }).then(res => res.json()).then(data => console.log(data));
+
+// Loan Assessment
+// fetch("http://localhost:5000/assess_loan_risk", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       loan_amount: 10000,
+//       loan_term: 10,
+//       interest_rate: 5,
+//       credit_score: 700,
+//       annual_income: 50000,
+//       monthly_debt: 800
+//     })
+//   }).then(res => res.json()).then(data => console.log(data));
