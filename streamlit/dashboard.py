@@ -263,17 +263,6 @@ with tabs[2]:
         lti_ratio = loan_amount / after_tax_income
         credit_utilization = (monthly_debt * 12) / (credit_card_limit + 1e-6)
 
-            st.session_state["loan_risk_assessment_data"] = {
-                "loan_amount": loan_amount,
-                "loan_term": loan_term,
-                "interest_rate": interest_rate,
-                "credit_score": credit_score,
-                "annual_income": annual_income,
-                "monthly_debt": monthly_debt,
-                "debt_to_income_ratio": debt_to_income_ratio,
-                "loan_risk": loan_risk
-            }
-
         # Initialize score and breakdown list
         score = 0
         score_log = []
@@ -392,6 +381,22 @@ with tabs[2]:
         df_scores = pd.DataFrame(score_log, columns=["Factor", "Score Impact"])
         st.dataframe(df_scores.to_dict(orient="records"), use_container_width=True)
 
+            st.session_state["loan_risk_assessment_data"] = {
+                "Loan Amount (USD)": loan_amount,
+                "Loan Term (Years)": loan_term,
+                "Interest Rate (%)": interest_rate,
+                "credit_score": credit_score,
+                "Annual After-Tax Income (USD)": annual_income,
+                "Monthly Debt Payments (USD)": monthly_debt,
+                "debt_to_income_ratio": debt_to_income_ratio,
+                "loan_risk": loan_risk,
+                "Number of Dependents":Number of Dependents,
+                "Number of Income Sources":Number of Income Sources
+                "Total Credit Card Limit (USD)":Total Credit Card Limit (USD)
+                "Number of Dependents":Number of Dependents
+                "Real Estate Securing the Loan?":Real Estate Securing the Loan?
+            }
+        
         if "loan_risk_assessment_data" in st.session_state:
             if st.button("Save Loan Risk Assessment"):
                 try:
