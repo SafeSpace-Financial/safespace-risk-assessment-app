@@ -380,20 +380,20 @@ with tabs[2]:
 
         # Save data to session
         st.session_state["loan_risk_assessment_data"] = {
-            "Loan Amount (USD)": loan_amount,
-            "Loan Term (Years)": loan_term,
-            "Interest Rate (%)": interest_rate,
-            "Credit Score": credit_score,
-            "Annual After-Tax Income (USD)": after_tax_income,
-            "Monthly Debt Payments (USD)": monthly_debt,
-            "Debt-to-Income Ratio": dti_ratio,
-            "Loan-to-Income Ratio": lti_ratio,
-            "Credit Utilization": credit_utilization,
-            "Loan Risk": risk,
-            "Number of Dependents": num_dependents,
-            "Number of Income Sources": income_sources,
-            "Total Credit Card Limit (USD)": credit_card_limit,
-            "Real Estate Securing the Loan?": has_real_estate
+            "loan_amount": loan_amount,
+            "loan_term": loan_term,
+            "interest_rate": interest_rate,
+            "credit_score": credit_score,
+            "after_tax_income": after_tax_income,
+            "monthly_debt": monthly_debt,
+            "dti_ratio": dti_ratio,
+            "lti_ratio": lti_ratio,
+            "credit_utilization": credit_utilization,
+            "loan_risk": risk,
+            "num_dependents": num_dependents,
+            "income_sources": income_sources,
+            "credit_card_limit": credit_card_limit,
+            "has_real_estate": has_real_estate
         }
 
     if "loan_risk_assessment_data" in st.session_state:
