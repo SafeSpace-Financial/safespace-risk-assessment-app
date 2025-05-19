@@ -38,13 +38,13 @@ def load_sp500_tickers():
 ticker_list = load_sp500_tickers()
 
 
-# Retrieve idToken from the Frontend
-#token = st.query_params.get("token", [None])[0]
-#if token:
-#    st.session_state["idToken"] = token
-#else:
-#    st.error("🔒 You must be signed in to use the simulator.")
-#    st.stop()
+ Retrieve idToken from the Frontend
+token = st.query_params.get("token", [None])[0]
+if token:
+    st.session_state["idToken"] = token
+else:
+    st.error("🔒 You must be signed in to use the simulator.")
+    st.stop()
 
 # Tabs for navigation
 tabs = st.tabs(["🏠 Welcome", "📊 Investment Simulator", "🤲 Loan Risk Assessment"])
@@ -176,16 +176,16 @@ with tabs[1]:
                     weighted_score = total_score * (allocations[ticker] / 100)
                     risk_scores.append(weighted_score)
 
-                    risk_score = sum(risk_scores)
-                    if risk_score < 3.5:
-                        risk_level = "Low Risk"
-                        color = "#367c74"  # green
-                    elif risk_score < 6.5:
-                        risk_level = "Moderate Risk"
-                        color = "#c97a41"  # orange
-                    else:
-                        risk_level = "High Risk"
-                        color = "#a33f3f"  # red
+                risk_score = sum(risk_scores)
+                if risk_score < 3.5:
+                    risk_level = "Low Risk"
+                    color = "#367c74"  # green
+                elif risk_score < 6.5:
+                    risk_level = "Moderate Risk"
+                    color = "#c97a41"  # orange
+                else:
+                    risk_level = "High Risk"
+                    color = "#a33f3f"  # red
 
                 st.markdown(f"**Overall Risk Score:** {risk_score:.2f}")
                 fig = go.Figure(go.Indicator(
@@ -262,6 +262,17 @@ with tabs[2]:
         dti_ratio = (monthly_debt * 12) / after_tax_income
         lti_ratio = loan_amount / after_tax_income
         credit_utilization = (monthly_debt * 12) / (credit_card_limit + 1e-6)
+
+            st.session_state["loan_risk_assessment_data"] = {
+                "loan_amount": loan_amount,
+                "loan_term": loan_term,
+                "interest_rate": interest_rate,
+                "credit_score": credit_score,
+                "annual_income": annual_income,
+                "monthly_debt": monthly_debt,
+                "debt_to_income_ratio": debt_to_income_ratio,
+                "loan_risk": loan_risk
+            }
 
         # Initialize score and breakdown list
         score = 0
