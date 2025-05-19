@@ -38,8 +38,8 @@ def load_sp500_tickers():
 ticker_list = load_sp500_tickers()
 
 
- Retrieve idToken from the Frontend
-token = st.query_params.get("token", [None])[0]
+# Retrieve idToken from the Frontend
+token = st.query_params.get("token", [None])
 if token:
     st.session_state["idToken"] = token
 else:
@@ -240,8 +240,7 @@ with tabs[1]:
 
 # --- Loan Risk Assessment Tab ---
 with tabs[2]:
-    def loan_risk_assessment():
-        st.title("🤲 Loan Risk Assessment")
+    st.title("🤲 Loan Risk Assessment")
 
     # User Inputs
     loan_amount = st.number_input("Loan Amount (USD)", min_value=1000, value=5000, step=500)
@@ -263,7 +262,6 @@ with tabs[2]:
         lti_ratio = loan_amount / after_tax_income
         credit_utilization = (monthly_debt * 12) / (credit_card_limit + 1e-6)
 
-        # Initialize score and breakdown list
         score = 0
         score_log = []
 
@@ -372,39 +370,45 @@ with tabs[2]:
             color = "🔴"
 
         # Output Summary
-       
         st.subheader(f"🔮 Predicted Loan Risk: {color} **{risk}**")
         st.markdown("---")
 
         # Score Log Table
         st.subheader("📑 Score Contribution Breakdown")
         df_scores = pd.DataFrame(score_log, columns=["Factor", "Score Impact"])
-        st.dataframe(df_scores.to_dict(orient="records"), use_container_width=True)
+        st.dataframe(df_scores, use_container_width=True)
 
-            st.session_state["loan_risk_assessment_data"] = {
-                "Loan Amount (USD)": loan_amount,
-                "Loan Term (Years)": loan_term,
-                "Interest Rate (%)": interest_rate,
-                "credit_score": credit_score,
-                "Annual After-Tax Income (USD)": annual_income,
-                "Monthly Debt Payments (USD)": monthly_debt,
-                "debt_to_income_ratio": debt_to_income_ratio,
-                "loan_risk": loan_risk,
-                "Number of Dependents":Number of Dependents,
-                "Number of Income Sources":Number of Income Sources
-                "Total Credit Card Limit (USD)":Total Credit Card Limit (USD)
-                "Number of Dependents":Number of Dependents
-                "Real Estate Securing the Loan?":Real Estate Securing the Loan?
-            }
-        
-        if "loan_risk_assessment_data" in st.session_state:
-            if st.button("Save Loan Risk Assessment"):
-                try:
-                    headers = {"Authorization": f"Bearer {token}"}
-                    response = requests.post("http://localhost:5000/simulations/loans", json=st.session_state["loan_risk_assessment_data"], headers=headers)
-                    if response.status_code == 201:
-                        st.success("Loan risk assessment saved successfully!")
-                    else:
-                        st.error(f"Failed to save loan risk assessment: {response.text}")
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
+        # Save data to session
+        st.session_state["loan_risk_assessment_data"] = {
+            "Loan Amount (USD)": loan_amount,
+            "Loan Term (Years)": loan_term,
+            "Interest Rate (%)": interest_rate,
+            "Credit Score": credit_score,
+            "Annual After-Tax Income (USD)": after_tax_income,
+            "Monthly Debt Payments (USD)": monthly_debt,
+            "Debt-to-Income Ratio": dti_ratio,
+            "Loan-to-Income Ratio": lti_ratio,
+            "Credit Utilization": credit_utilization,
+            "Loan Risk": risk,
+            "Number of Dependents": num_dependents,
+            "Number of Income Sources": income_sources,
+            "Total Credit Card Limit (USD)": credit_card_limit,
+            "Real Estate Securing the Loan?": has_real_estate
+        }
+
+    if "loan_risk_assessment_data" in st.session_state:
+        if st.button("Save Loan Risk Assessment"):
+            try:
+                headers = {"Authorization": f"Bearer {token}"}
+                response = requests.post(
+                    "http://localhost:5000/simulations/loans",
+                    json=st.session_state["loan_risk_assessment_data"],
+                    headers=headers
+                )
+                if response.status_code == 201:
+                    st.success("Loan risk assessment saved successfully!")
+                else:
+                    st.error(f"Failed to save loan risk assessment: {response.text}")
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+
