@@ -143,7 +143,9 @@ def loan_risk_assessment(token):
         # Score Log Table
         st.subheader("📑 Score Contribution Breakdown")
         df_scores = pd.DataFrame(score_log, columns=["Factor", "Score Impact"])
-        st.dataframe(df_scores.to_dict(orient="records", use_container_width=True)
+        st.dataframe(df_scores.to_dict(orient="records"), use_container_width=True)
+
+
 
         # Save data to session
         st.session_state["loan_risk_assessment_data"] = {
