@@ -2,14 +2,12 @@ import streamlit as st
 from components.investment_simulator import portfolio_simulator
 from components.loan_risk_assessment import loan_risk_assessment
 import requests
-# from components.investment_simulator import portfolio_simulator
-# from components.loan_risk_assessment import loan_risk_assessment
 
 # Authenticate user
 token = st.query_params.get("token", [None])
 name = st.query_params.get("name", "User")
-# apiURL = "http://localhost:5000/"
-apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com"
+apiURL = "http://localhost:5000/"
+# apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com"
 
 if token:
     st.session_state["idToken"] = token
