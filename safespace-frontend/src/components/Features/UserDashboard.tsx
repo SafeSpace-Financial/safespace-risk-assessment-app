@@ -33,7 +33,8 @@ export default function UserDashboard() {
             { idToken && (
                 <div style={{ position: 'relative', width: '100%', paddingTop: '75%' }}>
                     <iframe
-                    src={`https://safespace-streamlit-app-cc827f30d6b6.herokuapp.com/?token=${idToken}&name=${userProfile?.firstName || user?.email?.split('@')[0] || 'User'}`}
+                    src={`http://0.0.0.0:8501/?token=${idToken}&name=${userProfile?.firstName || user?.email?.split('@')[0] || 'User'}`}
+                    // src={`https://safespace-streamlit-app-cc827f30d6b6.herokuapp.com/?token=${idToken}&name=${userProfile?.firstName || user?.email?.split('@')[0] || 'User'}`}
                     style={{
                         position: 'absolute',
                         top: 0,

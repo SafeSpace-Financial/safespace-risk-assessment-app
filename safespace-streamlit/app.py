@@ -7,7 +7,7 @@ import requests
 
 # Authenticate user
 token = st.query_params.get("token", [None])
-name = st.query_params.get("name", [None])
+name = st.query_params.get("name", "User")
 # apiURL = "http://localhost:5000/"
 apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com"
 
