@@ -1,10 +1,9 @@
 // AuthContext.tsx
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth } from "../firebaseConfig";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User, signOut} from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User, signOut, getIdToken} from "firebase/auth";
 import React from "react";
 import api from '../api'
-
 
 interface AuthContextType {
     user: User | null;
@@ -22,57 +21,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    useEffect(()=>{
-        const unsubscribe = onAuthStateChanged(auth, (currentUser)=>{
+    useEffect(() => {
+        setLoading(true);
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
             setLoading(false);
             setError(null);
         });
-
-        return ()=>{
-            try{
-                unsubscribe();
-            }catch(err:any){
-                setError(err.message);
-            }};
+    
+        return () => unsubscribe();
     }, []);
-
-    // useEffect(() => {
-    //     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    //         setLoading(true);
-    //         setUser(currentUser);
-
-    //         if (currentUser) {
-    //             // If user is signed in, set 'is_active' to true in your database
-    //             try {
-    //                 await api.post("/accounts/update", {
-    //                     firebase_uid: currentUser.uid,
-    //                     is_active: true
-    //                 });
-    //             } catch (err) {
-    //                 setError("Failed to update user status.");
-    //             }
-    //         } else {
-    //             // If user is signed out, set 'is_active' to false in your database
-    //             try {
-    //                 await api.post("/accounts/update", {
-    //                     firebase_uid: user?.uid,
-    //                     is_active: false
-    //                 });
-    //             } catch (err) {
-    //                 setError("Failed to update user status.");
-    //             }
-    //         }
-    //         setLoading(false);
-    //     });
-
-    //     return unsubscribe;
-    // }, [user]);
+    
 
     const signUp = async (email: string, password: string) => {
         try {
             setLoading(true);
             await createUserWithEmailAndPassword(auth, email, password);
+            
         } catch (err: any) {
             setError(err.message);
             throw err;
@@ -85,21 +50,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             setLoading(true);
             await signInWithEmailAndPassword(auth, email, password);
+
+            // Get the ID token from Firebase
+            const currentUser = auth.currentUser;
+            if (!currentUser) throw new Error("Failed to retrieve current Firebase user.");
+
+            const idToken = await currentUser.getIdToken(true);
+
+            // Attempt to update the backend
+            await api.put("/accounts/update", { is_active: true }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`
+                }
+            });
+
+            setError(null); // clear error if success
         } catch (err: any) {
-            setError(err.message);
+            // If backend update fails, sign out from Firebase to maintain consistency
+            if (auth.currentUser) {
+                await signOut(auth).catch(() => {
+                    console.warn("Failed to sign out user after backend error.");
+                });
+            }
+
+            setError(err.message || "An error occurred during sign in.");
             throw err;
-        }finally{
+        } finally {
             setLoading(false);
         }
     };
 
+
     const logOut = async () => {
         try {
             setLoading(true);
+            const currentUser = auth.currentUser;
             await signOut(auth);
+            if (currentUser) {
+                await api.put("/accounts/update", { is_active: false });
+            }
         } catch (err: any) {
             setError(err.message);
-        }finally{
+        } finally {
             setLoading(false);
         }
     };
@@ -118,3 +110,5 @@ export const useAuth = () => {
     }
     return context;
 };
+
+

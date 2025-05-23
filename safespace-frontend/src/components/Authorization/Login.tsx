@@ -1,5 +1,5 @@
 // Login.tsx
-import { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useRef, useEffect }  from 'react';
 import { Container, Row, Col, Button, Form, Image, Alert  } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import SuccessModal from "../Navigation/SuccessModal";
@@ -7,57 +7,54 @@ import { useAuth } from "../../context/AuthContext";
 import AlreadySignedIn from "./AlreadySignedIn";
 import LoadingPage from "../LandingPages/LoadingPage";
 import { auth } from "../../firebaseConfig";
-import React from 'react';
 
 const Login = () => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [errorPage, setErrorPage] = useState<string | null>(null);
-    const [justLoggedIn, setJustLoggedIn] = useState<boolean>(false);
     const navigate = useNavigate();
     const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
     const { signIn, loading, user, error, logOut } = useAuth();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const justLoggedIn = useRef(false);
+
+    useEffect(() => {
+        if (!showSuccessModal && justLoggedIn.current) {
+            justLoggedIn.current = false;
+        }
+    }, [showSuccessModal]);
 
     const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         try {
+            setIsLoading(true);
             setErrorPage('');
             await signIn(email, password);
-            setJustLoggedIn(true);
+            justLoggedIn.current = true;
             const currentUser = auth.currentUser;
             if (!currentUser) throw new Error("User not available after registration.");
+
             if(currentUser.emailVerified){
                 setShowSuccessModal(true);
             }else{
                 logOut();
-                setJustLoggedIn(false);
                 setErrorPage('Please verify your email before signing in. Remember to check your spam folder.')
             }
         } catch (err: any) {
             setErrorPage(`Login failed: ${err.message}`);
+        }finally{
+            setIsLoading(false);
         }
     };
 
-    if (loading) {
-        return <LoadingPage />;
-    }
-
-    if (user && !justLoggedIn) {
-    return <AlreadySignedIn />;
-    }
+    if (loading || isLoading) return <LoadingPage />;
+    if (user && !justLoggedIn.current && !loading && !isLoading) return <AlreadySignedIn />;
 
     return (
             <Container className="p-5 my-5 rounded flex-grow-1 d-flex align-items-center">
                 <Row className="align-items-center">
                     <Col xs={12} md={6} order={{ xs: 2, md: 1 }}>
                     <h1>Welcome back.</h1>
-                    {loading&&<>
-                            <div className="text-center">
-                                <div className="spinner" role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                    </>}
                     <Form onSubmit={handleLogin}>
                         <Form.Group className="mb-3" controlId="loginEmail">
                             <Form.Label>Email address</Form.Label>
@@ -77,7 +74,7 @@ const Login = () => {
                                 onChange={(e) => setPassword(e.target.value)}/>
                         </Form.Group>
 
-                        <div className='text-center'>
+                        <div className='text-center mb-3'>
                             <Button variant='primary' type='submit'>Log In</Button>
                             <Button variant='secondary' onClick={()=>navigate('/')}>Cancel</Button>
                             <br/><a className='small' href='/forgot-password'>Forgot password?</a>
@@ -91,8 +88,7 @@ const Login = () => {
                             show={showSuccessModal}
                             onClose={() => {
                                 setShowSuccessModal(false);
-                                navigate(`/users/${user?.uid}`);
-                                setJustLoggedIn(false);
+                                navigate(`/user-profile`);
                             }}
                             title="Login Successful!"
                             message= {`Hey, ${user?.email}, let's get to work.`}

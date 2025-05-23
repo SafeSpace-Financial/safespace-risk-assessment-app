@@ -2,7 +2,9 @@ import React from "react";
 import { Container, Button, Row, Col, Image } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import SignOutButton from "../Authorization/SignOutButton";
+import SignOutButton from "../Navigation/SignOutButton";
+import DashboardButton from "../Navigation/DashboardButton";
+import GetStartedButton from "../Navigation/GetStartedButton";
 import { useEffect } from "react";
 import api from "../../api";
 import axios from "axios";
@@ -10,17 +12,6 @@ import axios from "axios";
 function HomePage(){
     const navigate = useNavigate();
     const { user } = useAuth();
-
-    
-    useEffect(() => {
-        axios.get('http://localhost:5000/ping')
-            .then(response => {
-                console.log("Backend says:", response.data);
-            })
-            .catch(error => {
-                console.error("Ping failed:", error.message);
-            });
-        }, []);
 
     return (
         <>
@@ -38,12 +29,14 @@ function HomePage(){
                         {/* If user is signed in, option to go to dashboard, 
                         otherwise, continue as guest or sign in*/}
                     {user?(
-                        <><Button variant="primary" onClick={()=>navigate('/userdashboard')}>Go to Dashboard</Button>
+                        <>
+                        <DashboardButton/>
+                        {/* <Button variant="primary" onClick={()=>navigate('/user-dashboard')}>Go to Dashboard</Button> */}
                         <SignOutButton/></>
                     ):(
                         <>
-                        <Button variant="primary">Continue as Guest</Button>
-                        <Button variant="secondary" onClick={() => navigate('/accounts/signup')}>Get Started</Button></>
+                        <Button variant="primary" onClick={()=>navigate('/about-us#our-features')}>Explore Our Features</Button>
+                        <GetStartedButton/></>
                     )}
                     </div>
                     
