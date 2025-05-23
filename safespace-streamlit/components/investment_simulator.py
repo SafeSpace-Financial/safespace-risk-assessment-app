@@ -141,7 +141,7 @@ def portfolio_simulator(token):
 
         st.header("Breakdown by Ticker")
         for ticker in selected_tickers:
-            st.markdown(f"📈 {ticker} Summary")
+            st.subheader(f"📈 {ticker} Summary")
             df_perf = pd.DataFrame({
                 "Performance Metrics": ["Start Price", "End Price", "Initial Investment", "Final Value", "Portfolio Return"],
                 "Values": [f"${initial_price:.2f}", f"${final_price:.2f}", f"${investment:,.2f}", f"${result_amount:,.2f}", f"{percent_change*100:.2f}%"]
@@ -168,6 +168,7 @@ def portfolio_simulator(token):
                 "portfolio_sharpe_ratio": portfolio_sharpe,
                 "ticker_data": selected_ticker_details
             }
+            st.markdown("---")
             
     if "risk_assessment_data" in st.session_state:
         if st.button("Save Risk Assessment"):

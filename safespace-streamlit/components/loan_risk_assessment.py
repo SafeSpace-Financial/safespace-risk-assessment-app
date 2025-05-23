@@ -143,7 +143,7 @@ def loan_risk_assessment(token):
         # Score Log Table
         st.subheader("📑 Score Contribution Breakdown")
         df_scores = pd.DataFrame(score_log, columns=["Factor", "Score Impact"])
-        st.dataframe(df_scores, use_container_width=True)
+        st.dataframe(df_scores.to_dict(orient="records", use_container_width=True)
 
         # Save data to session
         st.session_state["loan_risk_assessment_data"] = {
@@ -165,8 +165,8 @@ def loan_risk_assessment(token):
 
     if "loan_risk_assessment_data" in st.session_state:
         if st.button("Save Loan Risk Assessment"):
-            # apiURL = "http://localhost:5000/"
-            apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com"
+            apiURL = "http://localhost:5000/"
+            # apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com"
             try:
                 headers = {"Authorization": f"Bearer {token}"}
                 response = requests.post(
