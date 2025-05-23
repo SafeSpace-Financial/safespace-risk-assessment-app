@@ -80,20 +80,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-
     const logOut = async () => {
-        try {
-            setLoading(true);
-            const currentUser = auth.currentUser;
-            await signOut(auth);
-            if (currentUser) {
-                await api.put("/accounts/update", { is_active: false });
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+            try {
+                const idToken = await currentUser.getIdToken(true);
+                await api.put("/accounts/update", { logged_in: false }, {
+                    headers: { Authorization: `Bearer ${idToken}` }
+                });
+            } catch (err) {
+                console.error("Failed to update backend logout:", err);
             }
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
         }
+
+        await signOut(auth);
+        setUser(null);
     };
 
     return (

@@ -15,7 +15,7 @@ MAX_PER_PAGE = 100
 # User Routes
 
 # Create User
-@users_bp.route('/', methods=['POST'])
+@users_bp.route('/me', methods=['POST'])
 @auth_required # applying token verification wrapper to route
 @limiter.limit("5 per minute")
 def create_user():

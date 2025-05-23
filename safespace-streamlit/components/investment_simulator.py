@@ -11,8 +11,6 @@ def portfolio_simulator(token):
     ticker_list = load_sp500_tickers()
     amount = st.number_input("💵 Total Investment Amount (USD)", value=10000)
     selected_tickers = st.multiselect("Select tickers", ticker_list)
-    # ticker_input = st.text_input("Enter Tickers Symbols (comma-separated)", "AAPL, MSFT")
-    # selected_tickers = [ticker.strip().upper() for ticker in ticker_input.split(",") if ticker.strip()]
     start_date = st.date_input("Select Start Date", min_value=pd.to_datetime('2010-01-01'))
     end_date = st.date_input("Select End Date", min_value=start_date, max_value=pd.to_datetime('today'))
 
@@ -29,15 +27,19 @@ def portfolio_simulator(token):
         st.error("Allocations must total 100%.")
         return
 
+    # Button to Simulate Portfolio
     submit_button = st.button("Simulate Portfolio")
     if submit_button:
+        # Get the data for the tickers
         data = get_yahoo_data(selected_tickers, start_date, end_date)
         if data is None:
             return
 
+        # Iterate over the tickers
         portfolio_returns = []
         weighted_returns = []
         selected_ticker_details = []
+        risk_scores = []
         for ticker in selected_tickers:
             ticker_data = data[ticker]
             if ticker_data.empty:
@@ -54,6 +56,18 @@ def portfolio_simulator(token):
             sharpe_ratio = (returns.mean() / std_dev) * np.sqrt(252) if std_dev != 0 else 0
             max_drawdown = ((ticker_data.cummax() - ticker_data) / ticker_data.cummax()).max()
             weighted_returns.append(returns * (allocations[ticker] / 100))
+            portfolio_returns.append(result_amount)
+
+            returns = data[ticker].pct_change().dropna()
+            std_dev = np.std(returns) if not returns.empty else 0
+            sharpe_ratio = (returns.mean() / std_dev) * np.sqrt(252) if std_dev != 0 else 0
+            max_drawdown = ((data[ticker].cummax() - data[ticker]) / data[ticker].cummax()).max()
+            volatility_score = min(std_dev * 100, 10)
+            drawdown_score = min(max_drawdown * 10, 10)
+            sharpe_score = max(0, 10 - sharpe_ratio)
+            total_score = (volatility_score + drawdown_score + sharpe_score) / 3
+            weighted_score = total_score * (allocations[ticker] / 100)
+            risk_scores.append(weighted_score)
 
             selected_ticker_details.append({
                 "ticker": ticker,
@@ -68,24 +82,7 @@ def portfolio_simulator(token):
                 "max_drawdown": max_drawdown
             })
 
-            st.subheader(f"📈 {ticker} Summary")
-            df_perf = pd.DataFrame({
-                "Performance Metrics": ["Start Price", "End Price", "Initial Investment", "Final Value", "Portfolio Return"],
-                "Values": [f"${initial_price:.2f}", f"${final_price:.2f}", f"${investment:,.2f}", f"${result_amount:,.2f}", f"{percent_change*100:.2f}%"]
-            })
-            st.dataframe(df_perf.to_dict(orient="records"), use_container_width=True)
-            # st.dataframe(df_perf, use_container_width=True)
-            st.line_chart(ticker_data)
-
-            df_risk = pd.DataFrame({
-                "Risk Metrics": ["Volatility (Std Dev)", "Sharpe Ratio", "Max Drawdown"],
-                "Values": [f"{std_dev:.4f}", f"{sharpe_ratio:.2f}", f"{max_drawdown:.2%}"]
-            })
-            st.write("**⚠️ Risk Analysis**")
-            st.dataframe(df_risk.to_dict(orient="records"), use_container_width=True)
             
-            portfolio_returns.append(result_amount)
-
         if portfolio_returns:
             total_return = sum(portfolio_returns)
             combined_returns = pd.concat(weighted_returns, axis=1).sum(axis=1)
@@ -108,20 +105,6 @@ def portfolio_simulator(token):
             st.line_chart(combined_returns.cumsum())
             
             st.markdown("## :warning: Portfolio Risk Score")
-            risk_scores = []
-
-            for ticker in selected_tickers:
-                returns = data[ticker].pct_change().dropna()
-                std_dev = np.std(returns) if not returns.empty else 0
-                sharpe_ratio = (returns.mean() / std_dev) * np.sqrt(252) if std_dev != 0 else 0
-                max_drawdown = ((data[ticker].cummax() - data[ticker]) / data[ticker].cummax()).max()
-                volatility_score = min(std_dev * 100, 10)
-                drawdown_score = min(max_drawdown * 10, 10)
-                sharpe_score = max(0, 10 - sharpe_ratio)
-                total_score = (volatility_score + drawdown_score + sharpe_score) / 3
-                weighted_score = total_score * (allocations[ticker] / 100)
-                risk_scores.append(weighted_score)
-
             risk_score = sum(risk_scores)
             if risk_score < 3.5:
                 risk_level = "Low Risk"
@@ -156,6 +139,23 @@ def portfolio_simulator(token):
             ))
             st.plotly_chart(fig, use_container_width=True)
 
+        st.header("Breakdown by Ticker")
+        for ticker in selected_tickers:
+            st.markdown(f"📈 {ticker} Summary")
+            df_perf = pd.DataFrame({
+                "Performance Metrics": ["Start Price", "End Price", "Initial Investment", "Final Value", "Portfolio Return"],
+                "Values": [f"${initial_price:.2f}", f"${final_price:.2f}", f"${investment:,.2f}", f"${result_amount:,.2f}", f"{percent_change*100:.2f}%"]
+            })
+            st.dataframe(df_perf.to_dict(orient="records"), use_container_width=True)
+            st.line_chart(ticker_data)
+
+            df_risk = pd.DataFrame({
+                "Risk Metrics": ["Volatility (Std Dev)", "Sharpe Ratio", "Max Drawdown"],
+                "Values": [f"{std_dev:.4f}", f"{sharpe_ratio:.2f}", f"{max_drawdown:.2%}"]
+            })
+            st.write("**⚠️ Risk Analysis**")
+            st.dataframe(df_risk.to_dict(orient="records"), use_container_width=True)
+            
             st.session_state["risk_assessment_data"] = {
                 "risk_score": risk_score,
                 "risk_level": risk_level,
@@ -171,8 +171,9 @@ def portfolio_simulator(token):
             
     if "risk_assessment_data" in st.session_state:
         if st.button("Save Risk Assessment"):
-            # apiURL = "http://localhost:5000/"
-            apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com/"
+            # apiURL = "https://safespacefinancial.duckdns.org"
+            apiURL = "http://localhost:5000/"
+            # apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com/"
             try:
                 headers = {"Authorization": f"Bearer {token}"}
                 response = requests.post(f"{apiURL}simulations/investments", json=st.session_state["risk_assessment_data"], headers=headers)
