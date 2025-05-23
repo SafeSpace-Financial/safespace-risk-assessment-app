@@ -146,7 +146,6 @@ def loan_risk_assessment(token):
         st.dataframe(df_scores.to_dict(orient="records"), use_container_width=True)
 
 
-
         # Save data to session
         st.session_state["loan_risk_assessment_data"] = {
             "loan_amount": loan_amount,

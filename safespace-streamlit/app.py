@@ -52,7 +52,7 @@ with tabs[0]:
     if st.button("Load Loan Risk Assessments"):
         try:
             headers = {"Authorization": f"Bearer {token}"}
-            response = requests.get(f"{apiURL}simulations/loans", headers=headers)
+            response = requests.get(f"{apiURL}/simulations/loans", headers=headers)
             if response.status_code == 200:
                 loan_data = response.json()
                 if loan_data:
