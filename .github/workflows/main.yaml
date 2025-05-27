@@ -2,7 +2,7 @@ name: Flask CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, master ]
 
 jobs:
   build:
@@ -80,6 +80,34 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --targets "Key=InstanceIds,Values=i-062fae0082e081d5a" \
             --comment "Remote deploy from GitHub Actions" \
-            --parameters commands=["cd /home/ec2-user/myapp && git pull && cd safespace-backend && source venv/bin/activate && pip install -r requirements.txt && ./deploy.sh"] \
-            --region us-east-2
-            
+            --parameters '{"commands":["cd /home/ec2-user/myapp", "git config --global --add safe.directory $(pwd)", "cd safespace-backend", "git config --global --add safe.directory $(pwd)", "./deploy.sh"]}' \
+            --region us-east-2 \
+            --output text \
+            --query "Command.CommandId" > command_id.txt
+
+      - name: Wait for command to complete
+        run: |
+          COMMAND_ID=$(cat command_id.txt)
+          for i in {1..10}; do
+            echo "Checking command status (attempt $i)..."
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id i-062fae0082e081d5a \
+              --region us-east-2 \
+              --query 'Status' \
+              --output text)
+
+            echo "Status: $STATUS"
+            if [[ "$STATUS" == "Success" ]]; then
+              break
+            elif [[ "$STATUS" == "Failed" ]]; then
+              echo "Command failed"
+              aws ssm get-command-invocation \
+                --command-id "$COMMAND_ID" \
+                --instance-id i-062fae0082e081d5a \
+                --region us-east-2 \
+                --output text
+              exit 1
+            fi
+            sleep 5
+          done
