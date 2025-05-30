@@ -11,7 +11,7 @@ def loan_risk_assessment(token):
 
     # User Inputs
     loan_amount = st.number_input("Loan Amount (USD)", min_value=1000, value=5000, step=500)
-    interest_rate = st.slider("Interest Rate (%)", 0.0, 20.0, 5.0)
+    interest_rate = st.number_input("Interest Rate (%)", min_value=0.0, max_value=20.0, value=5.0, step=0.1)
     loan_term = st.slider("Loan Term (Years)", 1, 30, 10)
     after_tax_income = st.number_input("Annual After-Tax Income (USD)", min_value=1000, value=50000, step=1000)
     income_sources = st.number_input("Number of Income Sources", min_value=1, value=1, step=1)

@@ -7,19 +7,24 @@ import requests
 
 # Authenticate user
 token = st.query_params.get("token", [None])
-name = st.query_params.get("name", [None])
-# apiURL = "http://localhost:5000/"
+name = st.query_params.get("name", "User")
+apiURL = "http://localhost:5000/"
 # apiURL = "https://ec2-3-133-140-182.us-east-2.compute.amazonaws.com"
-apiURL = "https://safespacefinancial.duckdns.org/api/"
 
 if token:
     st.session_state["idToken"] = token
 else:
     st.error("🔒 You must be signed in to use the simulator.")
     st.stop()
-    
+
 # Tabs for navigation
 tabs = st.tabs(["🏠 Welcome", "📊 Investment Simulator", "🤲 Loan Risk Assessment"])
+
+if "load_tab" in st.session_state:
+    if st.session_state["load_tab"] == "investment":
+        st.switch_page("📊 Investment Simulator")
+    elif st.session_state["load_tab"] == "loan":
+        st.switch_page("🤲 Loan Risk Assessment")
 
 # --- Welcome Tab ---
 with tabs[0]:
@@ -33,8 +38,8 @@ with tabs[0]:
 
     st.markdown("## 📂 Your Saved Risk Assessments")
 
-    # Add buttons to fetch saved assessments
     if st.button("Load Investment Risk Assessments"):
+        st.session_state["load_tab"] = "investment"
         try:
             headers = {"Authorization": f"Bearer {token}"}
             response = requests.get(f"{apiURL}simulations/investments", headers=headers)
@@ -53,9 +58,10 @@ with tabs[0]:
             st.error(f"An error occurred: {e}")
 
     if st.button("Load Loan Risk Assessments"):
+        st.session_state["load_tab"] = "loan"
         try:
             headers = {"Authorization": f"Bearer {token}"}
-            response = requests.get(f"{apiURL}simulations/loans", headers=headers)
+            response = requests.get(f"{apiURL}/simulations/loans", headers=headers)
             if response.status_code == 200:
                 loan_data = response.json()
                 if loan_data:
@@ -74,6 +80,6 @@ with tabs[0]:
 with tabs[1]:
     portfolio_simulator(token)
 
-# # --- Loan Risk Assessment Tab ---
+# --- Loan Risk Assessment Tab ---
 with tabs[2]:
     loan_risk_assessment(token)
