@@ -115,7 +115,7 @@ const SignUp = () => {
                 {/* Form Column */}
                 <Col xs={12} md={6} order={{ xs: 2, md: 1 }}>
                     <h1>Let's get started.</h1>
-                    <p>Already have an account? <a href="/login">Sign in</a>.</p>
+                    <p>Already have an account? <a href="/accounts/login">Sign in</a>.</p>
                     <Form onSubmit={handleRegister}>
                         {/* Role dropdown */}
                         <Form.Group className="mb-3" controlId="registerRole">
