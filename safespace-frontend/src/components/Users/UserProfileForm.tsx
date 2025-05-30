@@ -44,9 +44,10 @@ const UserProfileForm: React.FC = () => {
 
         if (user) {
             try {
-                const response = await api.delete(`/users/me`);
+                const responseUser = await api.delete(`/users/me`);
+                const responseAccount = await api.delete('/accounts');
 
-                if (response.status === 200) {
+                if (responseUser.status === 200 && responseAccount.status === 200) {
                     await deleteUser(user); // Remove from Firebase
                     setShowSuccessDeleteModal(true);
                 } else {
